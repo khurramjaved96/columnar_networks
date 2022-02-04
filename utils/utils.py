@@ -19,6 +19,14 @@ def set_seed(seed):
     random.seed(seed)
     np.random.seed(seed)
 
+def get_device(run, total_gpus):
+    gpu_to_use = run % total_gpus
+    if torch.cuda.is_available():
+        device = torch.device('cuda:' + str(gpu_to_use))
+        logger.info("Using gpu : %s", 'cuda:' + str(gpu_to_use))
+    else:
+        device = torch.device('cpu')
+    return device
 def freeze_layers(layers_to_freeze, maml):
 
     for name, param in maml.named_parameters():
@@ -112,10 +120,10 @@ def iterator_sorter(trainset, no_sort=True, random=True, pairs=False, classes=10
     if no_sort:
         return trainset
 
-    order = list(range(len(trainset.data)))
+    order = list(range(len(trainset.all_experiments)))
     np.random.shuffle(order)
 
-    trainset.data = trainset.data[order]
+    trainset.all_experiments = trainset.all_experiments[order]
     trainset.targets = np.array(trainset.targets)
     trainset.targets = trainset.targets[order]
 
@@ -135,7 +143,7 @@ def iterator_sorter(trainset, no_sort=True, random=True, pairs=False, classes=10
     indices = np.argsort(sorting_labels)
     # print(indices)
 
-    trainset.data = trainset.data[indices]
+    trainset.all_experiments = trainset.all_experiments[indices]
     trainset.targets = np.array(trainset.targets)
     trainset.targets = trainset.targets[indices]
     # print(trainset.targets)
@@ -158,7 +166,7 @@ def remove_classes(trainset, to_keep):
         indices = indices + (trainset.targets == a).astype(int)
     indices = np.nonzero(indices)
     # logger.info(trainset.data[0])
-    trainset.data = trainset.data[indices]
+    trainset.all_experiments = trainset.all_experiments[indices]
     trainset.targets = np.array(trainset.targets)
     trainset.targets = trainset.targets[indices]
 
@@ -176,7 +184,7 @@ def remove_classes_omni(trainset, to_keep):
     for a in to_keep:
         indices = indices + (trainset.targets == a).astype(int)
     indices = np.nonzero(indices)
-    trainset.data = [trainset.data[i] for i in indices[0]]
+    trainset.all_experiments = [trainset.all_experiments[i] for i in indices[0]]
     # trainset.data = trainset.data[indices]
     trainset.targets = np.array(trainset.targets)
     trainset.targets = trainset.targets[indices]
