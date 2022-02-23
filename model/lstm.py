@@ -15,15 +15,15 @@ class LSTMNet(torch.nn.Module):
     def forward(self, x, state):
 
         features, state = self.recurrent_net(x, state)
-        features = features.view(1, -1)
+        features = features.view(len(x), -1)
         output = self.predictor(features)
         return output.squeeze(), state
 
     def decay_gradients(self, decay_rate):
         for name, param in self.named_parameters():
             if param.grad is not None:
-                # print(name)
-                # print(param.grad)
+                #print(name)
+                #print(param.grad)
                 param.grad = param.grad*decay_rate
-                # print(param.grad)
-                # print("")
+                #print(param.grad)
+                #print("")
